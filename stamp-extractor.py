@@ -2,9 +2,13 @@ import cv2
 import numpy as np
 
 def cam_img(img_path):
+    """
+    extract and remove stamps from an image
+    img_path: path to an image
+    """
     src = cv2.imread(img_path)
     hsv_img = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
-    #cv2.imshow('hsv_img', hsv_img)
+    # cv2.imshow('hsv_img', hsv_img)
     lower = np.array([0, 30, 30])
     upper = np.array([10, 255, 255])
     in_range = cv2.inRange(hsv_img, lower, upper)
@@ -14,6 +18,7 @@ def cam_img(img_path):
     cv2.imwrite('stamp1.jpg', stamp)
 
 def scan_img(img_path):
+    # a substitute that deals with stacked stamps
     src = cv2.imread(img_path)
     hsv_img = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
     lower1 = np.array([0, 160, 160])
