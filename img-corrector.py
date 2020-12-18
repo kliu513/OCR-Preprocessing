@@ -9,11 +9,9 @@ from skimage.color import rgb2gray
 from skimage.transform import hough_line, hough_line_peaks
 from skimage.transform import rotate
 from PIL import Image
-from black_edges_detection import edge_detection
-
+from black-edge-detector import edge_detection
 
 class SkewDetect:
-
     piby4 = np.pi / 4
 
     def __init__(
@@ -26,7 +24,6 @@ class SkewDetect:
         num_peaks=20,
         plot_hough=None
     ):
-
         self.sigma = sigma
         self.input_file = input_file
         self.batch_path = batch_path
@@ -36,13 +33,11 @@ class SkewDetect:
         self.plot_hough = plot_hough
 
     def write_to_file(self, wfile, data):
-
         for d in data:
             wfile.write(d + ': ' + str(data[d]) + '\n')
         wfile.write('\n')
 
     def get_max_freq_elem(self, arr):
-
         max_arr = []
         freqs = {}
         for i in arr:
@@ -57,10 +52,7 @@ class SkewDetect:
         for k in sorted_keys:
             if freqs[k] == max_freq:
                 max_arr.append(k)
-
-        return max_arr
-
-   
+        return max_arr 
 
     def compare_sum(self, value):
         if value >= 44 and value <= 46:
@@ -69,19 +61,15 @@ class SkewDetect:
             return False
 
     def display(self, data):
-
         for i in data:
             print(i + ": " + str(data[i]))
 
     def calculate_deviation(self, angle):
-
         angle_in_degrees = np.abs(angle)
         deviation = np.abs(SkewDetect.piby4 - angle_in_degrees)
-
         return deviation
 
     def run(self):
-
         if self.display_output:
             if self.display_output.lower() == 'yes':
                 self.display_output = True
@@ -103,7 +91,6 @@ class SkewDetect:
             self.process_single_file()
 
     def check_path(self, path):
-
         if os.path.isabs(path):
             full_path = path
         else:
@@ -111,7 +98,6 @@ class SkewDetect:
         return full_path
 
     def process_single_file(self):
-
         file_path = self.check_path(self.input_file)
         res = self.determine_skew(file_path)
         print(res)
@@ -121,7 +107,6 @@ class SkewDetect:
             wfile = open(output_path, 'w')
             self.write_to_file(wfile, res)
             wfile.close()
-
         return res
 
     def batch_process(self):
@@ -145,6 +130,7 @@ class SkewDetect:
                 res = self.determine_skew(file_path)
                 if wfile:
                     self.write_to_file(wfile, res)
+        
         if wfile:
             wfile.close()
 
@@ -167,7 +153,6 @@ class SkewDetect:
         bin_45_90n = []
 
         for ang in ap_deg:
-
             deviation_sum = int(90 - ang + average_deviation)
             if self.compare_sum(deviation_sum):
                 bin_45_90.append(ang)
@@ -212,19 +197,20 @@ class SkewDetect:
 
         if self.display_output:
             self.display(data)
-  
         return data
 
-
 def skew_correct(input_file):
+    """
+    Correct skewed images
+    input_file: path to an image
+    """
     # input_file = r'C:\Users\28912\Desktop\insurance\xingfu\tuanxian_dianzi.jpg'
-    # 定义文本旋转处理类对象
-    input_file = edge_detection(input_file)
+    input_file = edge_detection(input_file) # detect and remove black edges
     skew_obj = SkewDetect(input_file)
-    origin_img = io.imread(input_file)  # 读取图像数据
+    origin_img = io.imread(input_file)
     res = skew_obj.process_single_file()
     angle = res['Estimated Angle']
-    print(angle)
+    # print(angle)
 
     if (angle >= 0) and (angle <= 90):
         rot_angle = angle - 90
@@ -233,7 +219,6 @@ def skew_correct(input_file):
     if (angle >= -90) and (angle < -45):
         rot_angle = 90 + angle
 
-    # 根据检测出来的旋转角度进行旋转操作
     # rotated = rotate(origin_img, rot_angle, mode='wrap',preserve_range=True ) # , resize=True)`constant`, `edge`, `wrap`, `reflect` or `symmetric`.os
     # rotated = cv2.warpAffine(img, M, (cols, rows), borderValue=(255, 255, 255))
     res_path = input_file.split('.')[0] + '_res.jpg'
@@ -249,8 +234,8 @@ def skew_correct(input_file):
     # cv2.putText(rotated, "angle: {:.2f} ".format(rot_angle),
         # (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
     # cv2.imwrite(res_path, rotated)
-    
     return rot_angle, res_path
 
-img_path = '28.jpg'
-rot_angle, res_path = skew_correct(img_path)
+if __name__ == "__main__":
+    img_path = '28.jpg' # put the path to your image here
+    rot_angle, res_path = skew_correct(img_path)
