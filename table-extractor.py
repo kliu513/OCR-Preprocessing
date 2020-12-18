@@ -53,8 +53,11 @@ def split_table(positions, img, focus):
                     cv2.imshow('region'+str(i)+str(j), region)
     """
 
-def extract_table():
-    img = cv2.imread('scan.png')
+def extract_table(img):
+    """
+    Extract and remove tables from an image
+    img: an image object
+    """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, binary = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY_INV)
     rows, cols=binary.shape
@@ -72,6 +75,7 @@ def extract_table():
     """
 
 if __name__ == "__main__":
-    extract_table()
+    img = cv2.imread('scan.png')
+    extract_table(img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
