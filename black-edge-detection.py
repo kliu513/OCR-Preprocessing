@@ -9,27 +9,26 @@ CONST_SIGN = "_razor_images"
 CONST_ALIGN = 4
 CONST_OFFSET = 5
 
-
-def IsTuple(obj):
-    return type(obj) == tuple
-
-
-def Greyscale(color):
-    if (IsTuple(color)):
+def greyscale(color):
+    if (type(color) == tuple):
         res = (color[0] + color[1] + color[2]) / 3
     else:
         res = color
     return res
 
-
-def Limits(image, cropGrey):
+def limit(image, cropGrey):
+    """
+    crop an image based on the size limit
+    image: an image object in RGB
+    cropGrey: expected size
+    """
     xsize, ysize = image.size
     print(xsize, ysize)
-    #print(image.getpixel((xsize-1, ysize-1)))
+    # print(image.getpixel((xsize-1, ysize-1)))
     crop = [None, None, None, None]
     for y in range(ysize):
         for x in range(xsize):
-            grey = Greyscale(image.getpixel((x,y)))
+            grey = greyscale(image.getpixel((x,y)))
             if grey > cropGrey:
                 crop[1] = y
                 break
@@ -37,7 +36,7 @@ def Limits(image, cropGrey):
             break
     for y in range(ysize-1, -1, -1):
         for x in range(xsize):
-            grey = Greyscale(image.getpixel((x,y)))
+            grey = greyscale(image.getpixel((x,y)))
             if grey > cropGrey:
                 crop[3] = y
                 break
@@ -45,7 +44,7 @@ def Limits(image, cropGrey):
             break
     for x in range(xsize):
         for y in range(ysize):
-            grey = Greyscale(image.getpixel((x,y)))
+            grey = greyscale(image.getpixel((x,y)))
             if grey > cropGrey:
                 crop[0] = x
                 break
@@ -53,72 +52,15 @@ def Limits(image, cropGrey):
             break
     for x in range(xsize-1, -1, -1):
         for y in range(ysize):
-            grey = Greyscale(image.getpixel((x,y)))
+            grey = greyscale(image.getpixel((x,y)))
             if grey > cropGrey:
                 crop[2] = x
                 break
         if crop[2] != None:
             break
     return crop
-    """
-    crop = [0, 0, 0, 0]
-    if left_upper[0] > left_lower[0]:
-        crop[0] = left_lower[0]
-    else:
-        crop[0] = left_upper[0]
-    if left_upper[1] > right_upper[1]:
-        crop[1] = right_upper[1]
-    else:
-        crop[1] = left_upper[1]
-    if right_upper[0] > right_lower[0]:
-        crop[2] = right_upper[0]
-    else:
-        crop[2] = right_lower[0]
-    if left_lower[1] > right_lower[1]:
-        crop[3] = left_lower[1]
-    else:
-        crop[3] = right_lower[1]
-    """
-    """
-    crop = [xsize, None, 0, ysize]
-    for y in range(ysize):
-        for x in range(xsize):
-            color = image.getpixel((x, y))
-            grey = Greyscale(color)
-            if (not (grey > cropGrey - tolerance and grey < cropGrey + tolerance)):
 
-                if (x < crop[0]):
-                    crop[0] = x
-
-                if (x > crop[2]):
-                    crop[2] = x
-
-                if (crop[1] == None):
-                    crop[1] = y
-
-                crop[3] = y + 1
-
-    crop[2] = crop[2] + 1
-
-    if (crop[0] == xsize):
-        crop[0] = 0
-    if (crop[1] == None):
-        crop[1] = 0
-    if (crop[2] == 0):
-        crop[2] = xsize
-
-    if (crop[0] < 0):
-        crop[0] = 0
-    if (crop[1] < 0):
-        crop[1] = 0
-    if (crop[2] > xsize):
-        crop[2] = xsize
-    if (crop[3] > ysize):
-        crop[3] = ysize
-"""
-
-# nacte seznam obrazku
-def GetFiles(files, actDir):
+def get_files(files, actDir):
     os.chdir (actDir)
     dirs = []
     elements = glob.glob ("*")
@@ -136,12 +78,10 @@ def GetFiles(files, actDir):
 
     if (dirs != []):
         for x in range (len (dirs)):
-            GetFiles (files, os.path.join (actDir, dirs[x]))
-
+            get_files (files, os.path.join (actDir, dirs[x]))
     return files
 
-
-def MakeDirs(actDir, input, output):
+def make_dirs(actDir, input, output):
     os.chdir (actDir)
     dirs = []
     elements = glob.glob ("*")
@@ -157,22 +97,20 @@ def MakeDirs(actDir, input, output):
 
     if (dirs != []):
         for x in range (len (dirs)):
-            MakeDirs (dirs[x], input, output)
+            make_dirs (dirs[x], input, output)
 
-def PrintStats(file, sizeImg, sizeReg):
+def print_stats(file, sizeImg, sizeReg):
     spaceImg = []
     spaceReg = []
     spaceImg.append (CONST_ALIGN - len (str (sizeImg[0])))
     spaceImg.append (CONST_ALIGN - len (str (sizeImg[1])))
     spaceReg.append (CONST_ALIGN - len (str (sizeReg[0])))
     spaceReg.append (CONST_ALIGN - len (str (sizeReg[1])))
-
     strImg = spaceImg[0] * " " + str (sizeImg[0]) + " x " + spaceImg[1] * " " + str (sizeImg[1])
     strReg = spaceReg[0] * " " + str (sizeReg[0]) + " x " + spaceReg[1] * " " + str (sizeReg[1])
-
     print(strImg + CONST_OFFSET * " " + strReg + CONST_OFFSET * " " + file)
 
-
+# error messages
 def ErrorArg():
     print("ERROR: Incorrect arguments!\nTo show help, run program with parameter -h.")
     return
@@ -189,14 +127,17 @@ def ErrorSave(file):
     print("ERROR: Cannot save image file: " + file)
     return
 
-
 def edge_detection(inputpath):
-    cropGrey = 160
-    #tolerance = 200
+    """
+    detect and remove black edges of an image
+    inputpath: the path to an image
+    """
+    crop_grey = 160
+    # tolerance = 200
     output = inputpath.split('.')[0] + '_edge_removed.jpg'
     image = Image.open(inputpath)
     imageRgb = image.convert("RGB")
-    crop = Limits(imageRgb, cropGrey)
+    crop = limit(imageRgb, crop_grey)
     # save = str.replace (files[i], inputpath, output)
     region = image.crop((crop[0], crop[1], crop[2], crop[3]))
     region.load()
