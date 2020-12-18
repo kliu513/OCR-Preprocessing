@@ -4,18 +4,12 @@ from io import BytesIO
 from pyzbar import pyzbar
 from PIL import Image, ImageEnhance  
 
-def get_ewm(img_path):    
+def get_qrcode(img_path):    
     """ 
-    读取二维码的内容
-    img_path：二维码地址（可本地可网络） 
-    """    
-    if os.path.isfile(img_path):
-        #从本地加载二维码图片        
-        img = Image.open(img_path)    
-    else:        
-        #从网络下载并加载二维码图片        
-        qr_img = requests.get(img_path).content        
-        img = Image.open(BytesIO(qr_img))
+    Read QR code
+    img_path：path to an image of QR code
+    """          
+    img = Image.open(img_path)    
     img = ImageEnhance.Color(img).enhance(2.0)   
     img.show()     
     txt = pyzbar.decode(img)
@@ -25,6 +19,10 @@ def get_ewm(img_path):
     return code_data
 
 def write_xml(code_data):
+    """
+    Write code data to a .xml file
+    code_data: a list of code data
+    """
     f = open('invoice_info.xml', 'w', encoding='utf-8')
     f.write("<?xml encoding='utf-8'?>\n")
     f.write("<invoice>\n")
@@ -38,5 +36,5 @@ def write_xml(code_data):
     f.close()
 
 if __name__ == '__main__':    
-    code_data = get_ewm('sample.png')
+    code_data = get_qrcode('sample.png') # add an image path here
     write_xml(code_data)
