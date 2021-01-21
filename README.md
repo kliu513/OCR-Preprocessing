@@ -1,4 +1,5 @@
 # OCR-Preprocessing
+
 ### QR-code-reader.py
 The program reads QR code from an image and writes code data to a `.xml` file.  
 Required libraries: Python Imaging Library (PIL), pyzbar
